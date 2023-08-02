@@ -36,24 +36,17 @@ void Config::save() {
     saveObj["joinServerOnLaunch"] = joinServerOnLaunch;
     saveObj["serverIp"] = serverIp;
 
-    saveObj["useLevelHeadPrefix"] = useLevelHeadPrefix;
-    saveObj["levelHeadPrefix"] = levelHeadPrefix;
-
-    saveObj["useAutoggMessage"] = useAutoggMessage;
-    saveObj["autoggMessage"] = autoggMessage;
-
-    saveObj["useNickLevel"] = useNickLevel;
-    saveObj["nickLevel"] = nickLevel;
-
     saveObj["windowWidth"] = windowWidth;
     saveObj["windowHeight"] = windowHeight;
 
 
     QJsonArray arr;
-    foreach(const Agent& agent, agents){
+    for(const Agent& agent : agents){
         QJsonObject agentObj;
         agentObj["path"] = agent.path;
         agentObj["option"] = agent.option;
+        agentObj["enabled"] = agent.enabled;
+
         arr.append(agentObj);
     }
 
@@ -63,18 +56,22 @@ void Config::save() {
 }
 
 Config Config::load() {
-    QJsonObject jsonObj = loadJsonFromFile();
+    QJsonObject jsonObj = loadJsonFromConfig();
 
     QJsonArray arr = jsonObj["agents"].toArray();
 
     QList<Agent> agents;
 
-    foreach(const QJsonValue& val, arr){
+    for(auto val : arr){
         if(val.isObject()){
             QJsonObject obj = val.toObject();
+
             QString path = obj["path"].toString();
+            QString option = obj["option"].toString({});
+            bool enabled = obj["enabled"].toBool(true);
+
             if(QFile::exists(path)){
-                agents.append({path, obj["option"].toString({})});
+                agents.append({path, option, enabled});
             }
         }else{
             QString path = val.toString();
@@ -95,12 +92,6 @@ Config Config::load() {
         jsonObj["customMinecraftDir"].toString(),
         jsonObj["joinServerOnLaunch"].toBool(false),
         jsonObj["serverIp"].toString(),
-        jsonObj["useLevelHeadPrefix"].toBool(false),
-        jsonObj["levelHeadPrefix"].toString(),
-        jsonObj["useAutoggMessage"].toBool(false),
-        jsonObj["autoggMessage"].toString(),
-        jsonObj["useNickLevel"].toBool(true),
-        jsonObj["nickLevel"].toInt(-1),
         jsonObj["windowWidth"].toInt(640),
         jsonObj["windowHeight"].toInt(480),
         agents
@@ -123,7 +114,7 @@ void Config::saveJsonToConfig(const QJsonObject &jsonObject) {
     configFile.close();
 }
 
-QJsonObject Config::loadJsonFromFile() {
+QJsonObject Config::loadJsonFromConfig() {
     QFile configFile(configFilePath);
     configFile.open(QIODevice::ReadOnly | QIODevice::Text);
 

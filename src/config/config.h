@@ -15,8 +15,14 @@ struct Agent {
     QString path;
     QString option;
 
+    bool enabled;
 public:
-    Agent(const QString& path, const QString& option) : name(QFileInfo(path).fileName()), path(path), option(option) {}
+    Agent(const QString& path, const QString& option, bool enabled = true) :
+        name(QFileInfo(path).fileName()),
+        path(path),
+        option(option),
+        enabled(enabled)
+    {}
 };
 
 class Config {
@@ -41,15 +47,6 @@ public:
     bool joinServerOnLaunch;
     QString serverIp;
 
-    bool useLevelHeadPrefix;
-    QString levelHeadPrefix;
-
-    bool useAutoggMessage;
-    QString autoggMessage;
-
-    bool useNickLevel;
-    int nickLevel;
-
     int windowWidth;
     int windowHeight;
 
@@ -60,7 +57,7 @@ public:
     static Config load();
 private:
     static void saveJsonToConfig(const QJsonObject& jsonObject);
-    static QJsonObject loadJsonFromFile();
+    static QJsonObject loadJsonFromConfig();
 
 
     Config() = default;
